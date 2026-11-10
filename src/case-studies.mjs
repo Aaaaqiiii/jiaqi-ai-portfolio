@@ -2,7 +2,21 @@ import fs from 'node:fs';
 
 const repo='https://github.com/Aaaaqiiii/jiaqi-ai-portfolio';
 const source=repo+'/blob/main/dist/assets/demo-data.js';
-const list=items=>`<ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul>`;
+const tests=repo+'/blob/main/tests/demo.test.mjs';
+const personalWork={frames:'视频改编流程、画布交互与任务方案',creators:'资料建模、条件筛选与候选导出',finance:'金额处理、差异核验与结果导出'};
+const engineering={
+ frames:`<h3>输入固定，重试才有依据</h3><p>任务输入快照包含商品资料版本、分镜版本、模型参数与素材引用。改变任一输入都创建新修订；重试同一修订时先查询已有供应商任务。</p><pre><code>{
+  "task_id": "demo-shot-01",
+  "revision": 2,
+  "product_doc_version": "v3",
+  "script_version": "v2",
+  "model": "selected-model",
+  "duration_seconds": 6
+}</code></pre><p class="technical-note">任务输入契约设计；以上为示意字段。</p><h3>检索策略如何验收</h3><p>先用权限和型号约束过滤，再合并关键词与向量候选。RRF 按排名融合，避免直接相加不同量纲的检索分数；Rerank 只重排召回候选。</p><p>评估集需要覆盖相近型号、新旧资料冲突、无证据问题。对比关键词、向量、混合检索三组基线，分别记录 Recall@K、引用支持率、P95 延迟及单次成本。</p>`,
+ creators:`<h3>硬条件不能交给语义相似度</h3><p>预算、平台和报价有效期在服务端执行 SQL 约束。检索限定到返回的账号集合；生成理由时引用资料片段，最终再次检查账号是否属于候选集合。</p><h3>推荐对象是账号，不是资料片段</h3><p>检索到多个片段后按账号聚合，避免资料多的账号占据全部结果。报价快照记录来源、版本和有效期，历史清单读取快照而非最新报价。</p><h3>当前可运行代码</h3><p><code>selectCreators</code> 同时检查预算与所有搜索词；关键词匹配覆盖名称、风格与依据字段。这里只执行确定性筛选，不把关键词匹配称为语义检索。</p>`,
+ finance:`<h3>先分组，再判断关联关系</h3><p><code>reconcile</code> 将两侧记录按编号存入 Map，再遍历编号并集。先判断重复，随后判断缺失；只有两边各一条记录时才计算差额。</p><p>按记录数计，分组和合并为 O(n + m)，结果排序为 O(k log k)，k 为不同编号数；不会做两份表的笛卡尔连接。</p><h3>恢复边界</h3><p>服务方案把批次数据与检查点放在同一数据库事务中。文件输出采用独立状态：生成临时产物、核对内容、登记为可下载。测试时分别在提交前、提交后、文件登记前中断，检查重复执行是否改变结果。</p><h3>当前可运行代码</h3><p>浏览器金额按整数分计算；测试覆盖两位小数解析、异常输入、重复记录、单边缺失和预算筛选。Python 的 Decimal / ETL 属于服务方案，未借用浏览器测试作为后端验收结果。</p>`
+};
+function evidence(item){return `<section class="evidence-block" aria-label="工程依据"><div class="evidence-toolbar"><a href="${item.action[1]}" target="_blank" rel="noopener noreferrer">${item.slug==='frames'?'界面与设计材料':'业务函数源码'} ↗</a>${item.slug!=='frames'?`<a href="${tests}" target="_blank" rel="noopener noreferrer">测试代码 ↗</a><button type="button" class="tactile-button" data-run-checks="${item.slug}" aria-controls="check-results" aria-expanded="false"><span class="button-outer"><span class="button-inner"><span>运行检查</span></span></span></button>`:''}</div>${item.slug!=='frames'?'<div id="check-results" class="check-results" aria-live="polite" hidden></div>':''}<details class="engineering-details"><summary>技术取舍与验证<span aria-hidden="true">+</span></summary><div>${engineering[item.slug]}</div></details></section>`;}
 const table=(heads,rows)=>`<div class="decision-scroll" tabindex="0" role="region" aria-label="${heads.join('、')}"><table class="decision-table"><thead><tr>${heads.map(x=>`<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map((x,i)=>i===0?`<th scope="row">${x}</th>`:`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const chain=items=>`<ol class="technical-chain">${items.map(([a,b])=>`<li><strong>${a}</strong><span>${b}</span></li>`).join('')}</ol>`;
 
@@ -26,7 +40,7 @@ export const cases=[{
  ],next:'creators'
 },{
  slug:'creators',number:'02',title:'达人选型工作台',subtitle:'候选筛选、报价与推荐依据',
- intro:'同一个达人可能有多份报价，合适的内容风格也不等于符合预算。这个案例把筛选条件、报价来源和推荐依据放进同一份清单。',
+ intro:'同一个达人可能有多份报价，合适的内容风格也不等于符合预算。将筛选条件、报价来源和推荐依据放进同一份清单，便于核对选择。',
  scope:'可操作的关键词与预算筛选样例，使用虚构数据；SQL / RAG 为后端方案。',
  action:['样例源码 ↗',source],
  sections:[
@@ -68,7 +82,7 @@ export function renderCaseStudies(){
  for(const item of cases){
   const next=cases.find(c=>c.slug===item.next);
   const demo=demos[item.slug].replaceAll('href="assets/','href="../assets/').replaceAll('src="assets/','src="../assets/').replace('loading="lazy"','loading="eager"');
-  const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${item.title} — 王嘉祺</title><meta name="description" content="${item.intro}"><link rel="canonical" href="https://aaaaqiiii.github.io/jiaqi-ai-portfolio/projects/${item.slug}.html"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/portfolio.css"><link rel="stylesheet" href="../assets/cases.css"></head><body class="project-detail case-${item.slug}"><header class="site-nav"><a class="name-mark" href="../index.html">嘉祺<span>·</span></a><nav aria-label="主导航"><a href="../index.html#projects">作品</a><a href="../resume.html">简历</a><a class="github-nav" href="https://github.com/Aaaaqiiii" target="_blank" rel="noopener noreferrer">GitHub ↗</a></nav></header><main class="study"><a class="study-back" href="../index.html#${item.slug==='frames'?'frames':item.slug}">← 全部作品</a><header class="study-header"><p class="study-category">${item.subtitle}</p><h1>${item.title}</h1><p class="study-intro">${item.intro}</p><div class="study-meta"><p>${item.scope}</p><a href="${item.action[1]}" target="_blank" rel="noopener noreferrer">${item.action[0]}</a></div></header><div class="detail-stage stage-${item.slug==='frames'?'video':item.slug}" id="demo">${demo}</div><div class="study-sections">${item.sections.map(([title,body],index)=>`<section class="study-section" id="part-${index+1}"><h2><span>0${index+1}</span>${title}</h2><div class="study-copy">${body}</div></section>`).join('')}</div><footer class="study-next"><a href="../index.html#projects">全部作品</a><a class="next-project" href="${next.slug}.html"><span>下一个项目</span><strong>${next.title} ↗</strong></a></footer></main><script type="module" src="../assets/main.js"></script></body></html>`;
+  const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${item.title} — 王嘉祺</title><meta name="description" content="${item.intro}"><link rel="canonical" href="https://aaaaqiiii.github.io/jiaqi-ai-portfolio/projects/${item.slug}.html"><link rel="icon" href="../assets/favicon.svg"><link rel="stylesheet" href="../assets/style.css"><link rel="stylesheet" href="../assets/portfolio.css"><link rel="stylesheet" href="../assets/leibox/tactile-button.css"><link rel="stylesheet" href="../assets/cases.css"><link rel="stylesheet" href="../assets/recruiter.css"></head><body class="project-detail case-${item.slug}"><header class="site-nav"><a class="name-mark" href="../index.html">嘉祺<span>·</span></a><nav aria-label="主导航"><a href="../index.html#projects">作品</a><a href="../resume.html">简历</a><a class="github-nav" href="https://github.com/Aaaaqiiii" target="_blank" rel="noopener noreferrer">GitHub ↗</a></nav></header><main class="study"><a class="study-back" href="../index.html#${item.slug==='frames'?'frames':item.slug}">← 全部作品</a><header class="study-header"><p class="study-category">${item.subtitle}</p><h1>${item.title}</h1><p class="study-intro">${item.intro}</p><div class="contribution-strip"><div><span>个人负责</span><p>${personalWork[item.slug]}</p></div><div><span>开发方式</span><p>个人项目 · AI 辅助开发</p></div></div><div class="study-meta"><p>${item.scope}</p></div></header><div class="detail-stage stage-${item.slug==='frames'?'video':item.slug}" id="demo">${demo}</div>${evidence(item)}<div class="study-sections">${item.sections.map(([title,body],index)=>`<section class="study-section" id="part-${index+1}"><h2><span>0${index+1}</span>${title}</h2><div class="study-copy">${body}</div></section>`).join('')}</div><footer class="study-next"><a href="../index.html#projects">全部作品</a><a class="next-project" href="${next.slug}.html"><span>下一个项目</span><strong>${next.title} ↗</strong></a></footer></main><script type="module" src="../assets/main.js"></script><script type="module" src="../assets/evidence.js"></script></body></html>`;
   fs.writeFileSync(`dist/projects/${item.slug}.html`,html);
  }
 }
