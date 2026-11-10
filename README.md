@@ -2,7 +2,7 @@
 
 公开作品集网站，包含三个项目说明、现有 Fynix 公开截图、达人筛选和财务差异核验的浏览器交互样例，以及可打印的参考简历。
 
-[打开作品集](https://jiaqi-ai-portfolio.lucky-giant-0226.chatgpt.site/)
+[打开作品集](https://aaaaqiiii.github.io/jiaqi-ai-portfolio/) · [Sites 镜像](https://jiaqi-ai-portfolio.lucky-giant-0226.chatgpt.site/)
 
 ## 本地预览
 
