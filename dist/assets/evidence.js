@@ -22,7 +22,7 @@ document.querySelectorAll('[data-run-checks]').forEach(button => {
     }
     panel.append(list);
     panel.hidden = false;
-    button.querySelector('.button-inner span').textContent = '重新运行';
+    button.textContent = '重新运行';
     button.setAttribute('aria-expanded', 'true');
   });
 });
