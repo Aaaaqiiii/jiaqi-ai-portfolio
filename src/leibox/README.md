@@ -23,13 +23,13 @@
 
 Downloaded from https://leibox.pantoria.cn using the official LeiBox Skill on 2026-11-10.
 
-## Glass Folder Cards (previous iteration, no longer mounted)
+## Glass Folder Cards (active)
 
 - Source: https://leibox.pantoria.cn/docs/animations/glass-folder
 - Provider: LeiBox. Complete vanilla package retained in `glass-folder/`.
 - Source notice: Retain source notices and design-reference attribution; no blanket license is assigned by the catalog.
 - The live catalog explicitly marks source redistribution as permitted.
-- Removed from the current layout to avoid repeating the project list. Original package retained for provenance.
+- Homepage project entries use the original frosted folder and expanding file stack. Files link to project descriptions, demos and engineering notes; demo add/menu controls are hidden. Responsive layout, keyboard access and reduced-motion support are preserved. The original package is retained; portfolio adaptations live in the build and adjacent stylesheet.
 
 ## Glass Tab Menu (evaluated, not mounted)
 

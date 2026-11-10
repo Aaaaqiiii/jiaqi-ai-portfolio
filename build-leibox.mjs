@@ -3,12 +3,12 @@ import {stripTypeScriptTypes} from 'node:module';
 const to='dist/assets/leibox/';
 fs.mkdirSync(to,{recursive:true});
 fs.writeFileSync(to+'motion-runtime.js',stripTypeScriptTypes(fs.readFileSync('src/leibox/ascii-sharks/motion-runtime.ts','utf8')));
-for(const [folder,name] of [['ascii-sharks','AsciiSharks'],['elastic-panel-resize','ElasticPanelResize']]){
+for(const [folder,name] of [['ascii-sharks','AsciiSharks'],['elastic-panel-resize','ElasticPanelResize'],['glass-folder','GlassFolder']]){
  let code=fs.readFileSync(`src/leibox/${folder}/${name}Engine.js`,'utf8').replace(/\r\n/g,'\n').replace('"./motion-runtime"','"./motion-runtime.js"');
  if(name==='ElasticPanelResize'){
   const match=code.match(/const scope = createSurface\(target, (.*), options\);/);
   const config=JSON.parse(match[1]);config.responsive=true;
-  config.css+='.er-scene{background:transparent;user-select:auto}.er-scene::before{display:none}.er-panel{top:0;right:0;bottom:0;border-radius:0;border:0;border-left:1px solid #d3d5d4;box-shadow:none;background:#fafaf8;overflow:auto;overscroll-behavior:contain}.er-handle{top:0;bottom:0}.er-handle svg{opacity:max(.35,var(--er-reveal))}.er-handle:focus-visible::after{border-radius:0}';
+  config.css+='.er-scene{background:transparent;user-select:auto}.er-scene::before{display:none}.er-panel{top:0;right:0;bottom:0;border-radius:0;border:0;border-left:1px solid #d3d5d4;box-shadow:none;background:#ffffff;overflow:auto;overscroll-behavior:contain}.er-handle{top:0;bottom:0}.er-handle svg{opacity:max(.35,var(--er-reveal))}.er-handle:focus-visible::after{border-radius:0}';
   code=code.replace(match[0],`const scope = createSurface(target, ${JSON.stringify(config)}, options);`)
    .replace('const initial=.3865, min=.276, max=.5;','')
    .replace('let position=initial*width, target=position, velocity=0;','const initialLeft=()=>Math.max(16,width-440), minLeft=()=>Math.max(16,width-680), maxLeft=()=>width; let position=options.startClosed?width:initialLeft(), target=position, velocity=0;')
@@ -25,6 +25,21 @@ for(const [folder,name] of [['ascii-sharks','AsciiSharks'],['elastic-panel-resiz
    .replace('target=legal(value);updateValue();','target=legal(value);updateValue();if(width-target<80){options.onClose?.();return;}')
    .replace('return scope.controller;','return {...scope.controller,beginDrag:event=>beginExternalDrag(event)};');
  }
+ if(name==='GlassFolder'){
+  const match=code.match(/const scope = createSurface\(target, (.*), options\);/),config=JSON.parse(match[1]);
+  config.css+=fs.readFileSync('src/leibox/glass-folder/portfolio.css','utf8');config.height=440;
+  config.markup='<div class="glass-folder-demo" aria-label="项目文件夹"><div class="gf-demo-slot"></div><div class="gf-demo-slot"></div><div class="gf-demo-slot"></div></div>';
+  code=code.replace(match[0],`const scope = createSurface(target, ${JSON.stringify(config)}, options);`)
+   .replace('let files=SAMPLE_FILES.map','let files=settings.files.map')
+   .replace("const sheet=document.createElement('button');sheet.type='button';", "const sheet=document.createElement('a');sheet.href=file.href;")
+   .replace("sheet.addEventListener('click',()=>{feedback.textContent='Selected: '+file.name;});",'')
+   .replace("text.textContent=files.length+(files.length===1?' item':' items');",'text.textContent=settings.description;')
+   .replace("`${open?'Close':'Open'} ${settings.label}, ${files.length} ${files.length===1?'item':'items'}`","`${open?'收起':'展开'}${settings.label}`")
+   .replace("settings.label+' contents'","settings.label+'项目资料'")
+   .replace("host.append(root,feedback);", "host.append(root);key.hidden=true;menu.hidden=true;root.dataset.entered='';const link=document.createElement('a');link.className='gf-project-link';link.href=settings.href;link.textContent='查看项目 ↗';host.append(link);")
+   .replace(/  const enter=new IntersectionObserver\(.*?enter.observe\(root\);/, '')
+   .replace(/\[\r?\n  \{label:'My Files'[\s\S]*?\]\[index\]/,'options.folders[index]');
+ }
  fs.writeFileSync(to+name+'.js','// LeiBox adaptation. Original source and notices retained in src/leibox.\n'+code);
 }
-console.log('Built LeiBox shark ocean and elastic profile panel.');
+console.log('Built LeiBox shark ocean, elastic profile panel and glass folders.');

@@ -1,0 +1,16 @@
+.glass-folder-demo{min-height:0;padding:74px 0 16px;background:transparent;gap:40px;align-items:start;overflow:visible}
+.motion-body{background:transparent}
+.gf-demo-slot{padding-top:0;text-align:center}
+.gf-root{text-align:left}
+.gf-root[data-open]{--gf-spread:24px;--gf-fan:3deg}
+.gf-tilt{transform:none}
+.gf-shadow{opacity:.22}
+.gf-project-link{display:inline-block;margin-top:30px;padding:10px 0;color:#444;font:13px/1.5 system-ui,sans-serif;text-decoration:none;border-bottom:1px solid #bbb}
+.gf-project-link:hover{color:#111;border-color:currentColor}
+.gf-project-link:focus-visible{outline:2px solid #444;outline-offset:5px}
+.gf-meta{font-family:inherit;letter-spacing:0;font-size:12px}
+.gf-title{font-size:22px;font-weight:600}
+.gf-key,.gf-menu{display:none!important}
+.gf-sheet:focus-visible{outline-color:#444}
+@media(max-width:1050px){.glass-folder-demo{gap:22px}}
+@media(max-width:800px){.glass-folder-demo{grid-template-columns:1fr;padding:54px 0 12px;gap:70px}.gf-demo-slot{padding-top:0}}
