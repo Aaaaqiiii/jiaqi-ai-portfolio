@@ -1,0 +1,1 @@
+{"name":"jiaqi-portfolio","private":true,"type":"module","scripts":{"build":"node build-leibox.mjs && node build-pages.mjs && node build-portfolio.mjs","start":"node server.mjs","test":"node --test tests/*.test.mjs"}}

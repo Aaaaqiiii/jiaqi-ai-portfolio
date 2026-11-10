@@ -1,0 +1,6 @@
+node_modules/
+qa/
+.taste-skill/
+*.tar.gz
+*.zip
+.DS_Store

@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {selectCreators,toCents,reconcile,sourceA,sourceB} from '../dist/assets/demo-data.js';
+test('金额按分计算，不接受空值、三位小数或超出安全范围的输入',()=>{assert.equal(toCents('0.29'),29);assert.equal(toCents('-12.01'),-1201);for(const v of ['','1.001','NaN','9007199254740992'])assert.throws(()=>toCents(v));});
+test('区别金额差异、缺失和重复；重复不能被汇总掩盖',()=>{const rows=reconcile(sourceA,sourceB);assert.equal(rows.find(r=>r.id==='DEMO-001').delta,-3000);assert.equal(rows.find(r=>r.id==='DEMO-003').status,'missing');const duplicate=rows.find(r=>r.id==='DEMO-004');assert.equal(duplicate.status,'duplicate');assert.equal(duplicate.delta,null);assert.equal(rows.filter(r=>r.status!=='matched').length,3);});
+test('右侧独有记录仍能发现',()=>{assert.equal(reconcile([],[{id:'only',amount:'1.00'}])[0].status,'missing');});
+test('筛选同时遵守预算和关键词，空结果正常返回',()=>{assert.equal(selectCreators('生活',20000).length,2);assert.equal(selectCreators('',10000).length,1);assert.equal(selectCreators('不存在',50000).length,0);assert.equal(selectCreators('母婴',10000).length,0);});
